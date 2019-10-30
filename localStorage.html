@@ -1,0 +1,327 @@
+</html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link href="https://fonts.googleapis.com/css?family=Lato:300&display=swap" rel="stylesheet">
+	<style>
+		* {
+			box-sizing: border-box;
+			list-style: none;
+		}
+
+
+		.in {
+			border: 0.5px solid lightblue;
+			border-radius: 10px;
+			width: 800px;
+			padding: 10px;
+			height: 50px;
+			float: left;
+			font-size: 16px;
+		}
+
+		.sort {
+			height: 50px;
+		}
+
+		.done__task {
+			color: #000;
+			text-decoration: line-through;
+		}
+
+		.hide {
+			display: none;
+		}
+
+		.done,
+		.remove,
+		.removebutton,
+		.correct {
+			float: right;
+			background: white;
+			border-radius: 5px;
+			border: 1px solid lightgrey;
+			height: 30px;
+			width: 80px;
+			margin-left: 20px;
+			cursor: pointer;
+		}
+
+		ul {
+			margin: 0;
+			padding: 0;
+		}
+
+		li {
+			font-size: 20px;
+			height: 40px;
+			padding: 5px 0 0 10px;
+			margin: 10px 100px 0 50px;
+		}
+
+		li:hover {
+			background: radial-gradient(at top, #FEFFFF, #E6FEFF);;
+		}
+
+		.wrapper {
+			width: 1000px;
+			margin: auto;
+		}
+
+		h1 {
+			text-align: center;
+			font-size: 50px;
+			font-family: 'Lato', sans-serif;
+		}
+
+		.head {
+			padding: 30px 40px;
+			color: black;
+			text-align: center;
+		}
+
+		.sort {
+			padding: 10px;
+			background: white;
+			border-radius: 5px;
+			border: 1px solid lightgrey;
+			float: right;
+			cursor: pointer;
+			transition: 0.3s;
+		}
+
+		.add {
+			padding: 10px;
+			height: 50px;
+			
+			background: white;
+			border-radius: 5px;
+			border: 1px solid lightgrey;
+			text-align: center;
+			font-size: 16px;
+			cursor: pointer;
+			transition: 0.3s;
+		}
+
+		.in:focus,
+		.add:focus,
+		.sort:focus,
+		.done:focus,
+		.remove:focus,
+		.correct:focus {outline:none;}
+
+
+		.sort:hover,
+		.add:hover {
+			background: linear-gradient(to top left, #EEF9FA, white);
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="head">
+			<h1>TO DO LIST</h1>
+			<input class="in" type="text" placeholder="Введите свою заметку...">
+			<button class="add">ADD</button>
+			<button class="sort">
+				<img width="30" height="30"
+				src="https://cdn1.iconfinder.com/data/icons/starter-mobile-app/100/mobile_button-31-512.png" alt="">
+			</button>
+		</div>
+		<ul id="toDoList"></ul>
+
+	</div>
+
+
+	<script>
+
+		const saveList = function() {
+			if (localStorage.getItem('toDo')) {
+				tasks = [...JSON.parse(localStorage.getItem('toDo'))]
+				tasks.forEach(item => {
+					toDOList.task.push(item)
+				})
+
+				tasks.forEach(toDOList.createList)
+			}
+		};
+
+		
+		const toDOList = {
+			task: [],
+
+			createList(item) {
+					const $li = document.createElement('li');
+					$li.classList.add('toDo_item');
+					$li.innerText = item.taskContent;
+
+					const $btDone = document.createElement('button');
+					$btDone.innerText = 'DONE';
+					$btDone.classList.add('done');
+					$li.append($btDone);
+
+					const $btRemove = document.createElement('button');
+					$btRemove.innerText = 'DELETE';
+					$btRemove.classList.add('removebutton');
+					$li.append($btRemove);
+
+					const $btEdit = document.createElement('button');
+					$btEdit.innerText = 'Correct';
+					$btEdit.classList.add('correct');
+					$li.append($btEdit);
+					const $toList = document.querySelector('#toDoList');
+
+					$toList.append($li);
+			},
+
+			addTask(e) {
+				let $textTask = document.querySelector('.in').value;
+				const isEmpty = $textTask.trim();
+
+				const found = toDOList.task.some(function (element) {
+					return element.taskContent === $textTask;
+				});
+				if (found) {
+					alert('Такая заметка уже существует');
+				} else if ($textTask === '' || !isEmpty) {
+					alert('Введи заметку...');
+				} else {
+					const task =  {
+						taskContent: $textTask,
+						isDone: false,
+						id: toDOList.getId()
+
+					}
+					toDOList.task.push(task);
+					toDOList.createList(task);
+					localStorage.setItem("toDo", JSON.stringify(toDOList.task));
+
+					
+				};
+				document.querySelector('.in').value = '';
+				console.log(toDOList.task);
+			},
+			getId() {
+				return Math.random().toString().substring(2, 15);
+			},
+			checkFunction(e) {
+				let index = toDOList.task.findIndex(function (task) {
+					const taskContent = e.target.parentNode.childNodes[0].textContent;
+					if (task.taskContent === taskContent) {
+						return task;
+					}
+					else {
+						return false;
+					}
+				})
+				return toDOList.task[index];
+			},
+			confirmFunction() {return confirm('Подтвердите действие')},
+			removeTask(e) {
+				if (e.target.className === 'removebutton' && toDOList.confirmFunction()) {
+					id = e.target.parentNode.innerText[0];
+					let index = toDOList.task.map(function(e) { 
+						return e.id; 
+					}).indexOf(id); 
+					toDOList.task.splice(index,1);
+					e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+							
+						const taskParse = JSON.parse(localStorage.getItem('toDo'));
+						taskParse.splice(toDOList.checkFunction(e), 1);
+						localStorage.setItem('toDo' , JSON.stringify(taskParse));
+				}
+
+			},
+			updateTask(e) {
+				if (e.target.className === 'correct') {
+					currentTask = toDOList.checkFunction(e);
+					const editTask = prompt('Введите новую заметку');
+					if(toDOList.confirmFunction()){
+						const found = toDOList.task.some(function (element) {
+							return element.taskContent === editTask;
+						});
+
+						if (found) {
+							alert('Такая заметка уже существует');
+						} else if (editTask === '' || editTask === null) {
+							alert('От еблан...');
+						} else {
+							e.target.parentElement.firstChild.textContent = editTask;
+							currentTask.taskContent = editTask;
+							
+							const taskParse = JSON.parse(localStorage.getItem('toDo'));
+							// ХУЛИ ТЕБЕ НЕ ТАК!!??
+							taskParse[toDOList.checkFunction(e)].taskContent = editTask;
+							const setNote = JSON.stringify(taskParse);
+							localStorage.setItem('toDo' , setNote);
+							e.target.parentElement.firstChild.textContent = editTask;
+							currentTask.taskContent = editTask;
+							toDOList.task[currentTask].taskContent = editTask;		
+						}
+					}
+				}
+			},
+			taskStatus(e) {
+				if (e.target.className === 'done') {
+					id = e.target.parentNode.innerText[0];
+					let index = toDOList.task.map(function(e) { 
+						return e.id; 
+					}).indexOf(id); 
+					e.target.parentNode.classList.add('done__task');
+					e.target.setAttribute('disabled', true);
+					e.target.parentNode.lastChild.setAttribute('disabled', true); 
+					currentTask = toDOList.checkFunction(e);
+					currentTask.isDone = !currentTask.isDone;
+		
+						const parseNotes = JSON.parse(localStorage.getItem('toDo'));
+						const findCurrentTask = parseNotes.findIndex(task => {
+							const textTask = e.target.parentNode.childNodes[0].textContent;
+							if(task.taskContent === textTask) {
+								return task
+							}
+						});
+						parseNotes[findCurrentTask].isDone = !parseNotes[findCurrentTask].isDone;
+						const setNote= JSON.stringify(parseNotes);
+						localStorage.setItem('toDo' , setNote);
+					
+				}
+			},
+			sortTask(e) {
+				const $sort = document.querySelector('.sort');
+				$sort.addEventListener('click', function(){
+					const $doneTask = document.querySelectorAll('.done__task');
+					$doneTask.forEach(element => {
+						element.classList.toggle('hide');
+					})
+				})
+				
+			}
+
+		}
+
+		const $buttonCreateTask = document.querySelector('.add');
+		$buttonCreateTask.addEventListener('click', toDOList.addTask); 
+		const $inputTask = document.querySelector('.in');
+		$inputTask.addEventListener('keydown', e => {
+			if (e.keyCode === 13) {
+				toDOList.addTask();
+			}
+		});
+		const $button = document.querySelector('#toDoList');
+		$button.addEventListener('click', toDOList.taskStatus); 
+		$button.addEventListener('click', toDOList.removeTask);
+		$button.addEventListener('click', toDOList.updateTask);
+		const $sortTask = document.querySelector('.sort');
+		$sortTask.addEventListener('click', toDOList.sortTask());
+
+		saveList();
+
+	
+	</script>
+</body>
+
+</html>
