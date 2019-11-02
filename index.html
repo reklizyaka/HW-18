@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Document</title>
+	</head>
+	<body>
+		<div class="wrapper">
+			<h1>Choose the ship</h1>
+			<select id="ship-list"></select>
+			<h2 class="ship-name"></h2>
+			<ul class="film-list"></ul>
+		</div>
+		<script>
+			let ships = [];
+
+			const xhr = new XMLHttpRequest();
+			xhr.open('get', 'https://swapi.co/api/starships/');
+			xhr.send();
+			xhr.onload = function() {
+				const res = JSON.parse(this.response);
+				ships = [...res.results];
+
+				const xhr = new XMLHttpRequest();
+				xhr.open('get', res.next);
+				xhr.send();
+				xhr.onload = function() {
+					const res = JSON.parse(this.response);
+					ships = [...ships, ...res.results];
+
+					const xhr = new XMLHttpRequest();
+					xhr.open('get', res.next);
+					xhr.send();
+					xhr.onload = function() {
+						const res = JSON.parse(this.response);
+						ships = [...ships, ...res.results];
+
+						const xhr = new XMLHttpRequest();
+						xhr.open('get', res.next);
+						xhr.send();
+						xhr.onload = function() {
+							const res = JSON.parse(this.response);
+							ships = [...ships, ...res.results];
+
+							const xhr = new XMLHttpRequest();
+							xhr.open('get', 'https://swapi.co/api/films/');
+							xhr.send();
+							xhr.onload = function() {
+								const res = JSON.parse(this.response);
+								const filmList = res.results.reduce((acc, film) => {
+				                    acc[film.url] = film;
+				                    return acc;
+				                }, {});
+
+
+				                const shipList = ships.map(ship => ({
+				                    name: ship.name,
+				                    id: ship.url,
+				                    films: ship.films.map(film => {
+				                        return filmList[film].title;
+				                    })
+				                }));
+
+				                
+				                const select = document.querySelector('#ship-list');
+				                const $title = document.querySelector('.ship-name');
+				                const $list = document.querySelector('.film-list');
+
+				                shipList.forEach(ship => {
+				                	const option = document.createElement('option');
+								    option.value = ship.id;
+								    option.innerHTML = ship.name;
+								    select.appendChild(option);
+				                });
+
+				                select.addEventListener('change', e => {
+				                	const ship = shipList.find(ship => ship.id === e.target.value);
+				                	$title.innerText = '';
+				                	$list.innerHTML = '';
+				                	$title.innerText = ship.name;
+
+				                	ship.films.forEach(film => {
+				                		const li = document.createElement('li');
+				                		li.innerText = film;
+				                		$list.appendChild(li);
+				                	})
+				                });
+							};
+						};
+					};
+				};
+			};
+			
+		</script>
+	</body>
+</html>
