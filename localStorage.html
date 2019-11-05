@@ -110,7 +110,7 @@
 		.add:focus,
 		.sort:focus,
 		.done:focus,
-		.remove:focus,
+		.removebutton:focus,
 		.correct:focus {outline:none;}
 
 
@@ -138,190 +138,194 @@
 
 
 	<script>
-
 		const saveList = function() {
-			if (localStorage.getItem('toDo')) {
-				tasks = [...JSON.parse(localStorage.getItem('toDo'))]
+			if (localStorage.getItem("toDo")) {
+				tasks = [...JSON.parse(localStorage.getItem("toDo"))];
 				tasks.forEach(item => {
-					toDOList.task.push(item)
-				})
-
-				tasks.forEach(toDOList.createList)
+					toDOList.task.push(item);
+				});
+				
+				tasks.forEach(toDOList.createList);
 			}
 		};
-
 		
 		const toDOList = {
 			task: [],
-
-			createList(item) {
-					const $li = document.createElement('li');
-					$li.classList.add('toDo_item');
-					$li.innerText = item.taskContent;
-
-					const $btDone = document.createElement('button');
-					$btDone.innerText = 'DONE';
-					$btDone.classList.add('done');
-					$li.append($btDone);
-
-					const $btRemove = document.createElement('button');
-					$btRemove.innerText = 'DELETE';
-					$btRemove.classList.add('removebutton');
-					$li.append($btRemove);
-
-					const $btEdit = document.createElement('button');
-					$btEdit.innerText = 'Correct';
-					$btEdit.classList.add('correct');
-					$li.append($btEdit);
-					const $toList = document.querySelector('#toDoList');
-
-					$toList.append($li);
+			
+			checkDoneStatus() {
+				toDOList.task.forEach(item => {
+					if (item.isDone === true) {
+						const $toList = document.querySelector("#toDoList");
+					}
+				});
 			},
-
+			createList(item) {
+				const $li = document.createElement("li");
+				$li.classList.add("note_list");
+				$li.innerText = item.taskContent;
+				
+				const $btDone = document.createElement("button");
+				$btDone.innerText = "DONE";
+				$btDone.classList.add("done");
+				$li.append($btDone);
+				
+				const $btRemove = document.createElement("button");
+				$btRemove.innerText = "DELETE";
+				$btRemove.classList.add("removebutton");
+				$li.append($btRemove);
+				
+				const $btEdit = document.createElement("button");
+				$btEdit.innerText = "Correct";
+				$btEdit.classList.add("correct");
+				
+				$li.append($btEdit);
+				const $toList = document.querySelector("#toDoList");
+				if (item.isDone === true) {
+					$li.classList.add("done__task");
+					$btDone.setAttribute("disabled", true);
+					$btEdit.setAttribute("disabled", true);
+				}
+				$toList.append($li);
+			},
+			
 			addTask(e) {
-				let $textTask = document.querySelector('.in').value;
+				let $textTask = document.querySelector(".in").value;
 				const isEmpty = $textTask.trim();
-
-				const found = toDOList.task.some(function (element) {
+				
+				const found = toDOList.task.some(function(element) {
 					return element.taskContent === $textTask;
 				});
 				if (found) {
-					alert('Такая заметка уже существует');
-				} else if ($textTask === '' || !isEmpty) {
-					alert('Введи заметку...');
+					alert("Такая заметка уже существует");
+				} else if ($textTask === "" || !isEmpty) {
+					alert("Введи заметку...");
 				} else {
-					const task =  {
+					const task = {
 						taskContent: $textTask,
 						isDone: false,
 						id: toDOList.getId()
-
-					}
+					};
 					toDOList.task.push(task);
 					toDOList.createList(task);
 					localStorage.setItem("toDo", JSON.stringify(toDOList.task));
-
-					
-				};
-				document.querySelector('.in').value = '';
-				console.log(toDOList.task);
+				}
+				document.querySelector(".in").value = "";
 			},
 			getId() {
-				return Math.random().toString().substring(2, 15);
+				return Math.random()
+				.toString()
+				.substring(2, 15);
 			},
 			checkFunction(e) {
-				let index = toDOList.task.findIndex(function (task) {
-					const taskContent = e.target.parentNode.childNodes[0].textContent;
-					if (task.taskContent === taskContent) {
+				const findTask = toDOList.task.findIndex(task => {
+					const textTask = e.target.parentNode.childNodes[0].textContent;
+					if (task.taskContent === textTask) {
 						return task;
 					}
-					else {
-						return false;
-					}
-				})
-				return toDOList.task[index];
+				});
+				return findTask;
 			},
-			confirmFunction() {return confirm('Подтвердите действие')},
+			checkFindFunction(e, parseNotes) {
+				const find = parseNotes.findIndex(task => {
+					const textTask = e.target.parentNode.childNodes[0].textContent;
+					if (task.taskContent === textTask) {
+						return task;
+					}
+				});
+				return find;
+			},
+			confirmFunction() {
+				return confirm("Подтвердите действие");
+			},
 			removeTask(e) {
-				if (e.target.className === 'removebutton' && toDOList.confirmFunction()) {
-					id = e.target.parentNode.innerText[0];
-					let index = toDOList.task.map(function(e) { 
-						return e.id; 
-					}).indexOf(id); 
-					toDOList.task.splice(index,1);
-					e.target.parentNode.parentNode.removeChild(e.target.parentNode);
-							
-						const taskParse = JSON.parse(localStorage.getItem('toDo'));
-						taskParse.splice(toDOList.checkFunction(e), 1);
-						localStorage.setItem('toDo' , JSON.stringify(taskParse));
+				if (e.target.className === "removebutton" && toDOList.confirmFunction()) {
+					e.target.parentNode.classList.add("remove__task");
+					const findTask = toDOList.checkFunction(e);
+					toDOList.task.splice(findTask, 1);
+					const $removeItem = document.querySelector(".remove__task");
+					$removeItem.remove();
+					const parseNotes = JSON.parse(localStorage.getItem("toDo"));
+					const find = toDOList.checkFindFunction(e, parseNotes);
+					parseNotes.splice(find, 1);
+					const setNote = JSON.stringify(parseNotes);
+					localStorage.setItem("toDo", setNote);
 				}
-
 			},
 			updateTask(e) {
-				if (e.target.className === 'correct') {
-					currentTask = toDOList.checkFunction(e);
-					const editTask = prompt('Введите новую заметку');
-					if(toDOList.confirmFunction()){
-						const found = toDOList.task.some(function (element) {
+				if (e.target.className === "correct") {
+					const findTask = toDOList.checkFunction(e);
+					const editTask = prompt("Введите новую заметку");
+					if (toDOList.confirmFunction()) {
+						const found = toDOList.task.some(function(element) {
 							return element.taskContent === editTask;
 						});
-
+						
 						if (found) {
-							alert('Такая заметка уже существует');
-						} else if (editTask === '' || editTask === null) {
-							alert('От еблан...');
+							alert("Такая заметка уже существует");
+						} else if (editTask === "" || editTask === null) {
+							alert("От еблан...");
 						} else {
+							const parseNotes = JSON.parse(localStorage.getItem("toDo"));
+							const find = toDOList.checkFindFunction(e, parseNotes);
+							parseNotes[findTask].taskContent = editTask;
+							const setNote = JSON.stringify(parseNotes);
+							localStorage.setItem("toDo", setNote);
 							e.target.parentElement.firstChild.textContent = editTask;
-							currentTask.taskContent = editTask;
-							
-							const taskParse = JSON.parse(localStorage.getItem('toDo'));
-							// ХУЛИ ТЕБЕ НЕ ТАК!!??
-							taskParse[toDOList.checkFunction(e)].taskContent = editTask;
-							const setNote = JSON.stringify(taskParse);
-							localStorage.setItem('toDo' , setNote);
-							e.target.parentElement.firstChild.textContent = editTask;
-							currentTask.taskContent = editTask;
-							toDOList.task[currentTask].taskContent = editTask;		
+							toDOList.task[findTask].taskContent = editTask;
 						}
 					}
 				}
 			},
 			taskStatus(e) {
-				if (e.target.className === 'done') {
-					id = e.target.parentNode.innerText[0];
-					let index = toDOList.task.map(function(e) { 
-						return e.id; 
-					}).indexOf(id); 
-					e.target.parentNode.classList.add('done__task');
-					e.target.setAttribute('disabled', true);
-					e.target.parentNode.lastChild.setAttribute('disabled', true); 
-					currentTask = toDOList.checkFunction(e);
-					currentTask.isDone = !currentTask.isDone;
-		
-						const parseNotes = JSON.parse(localStorage.getItem('toDo'));
-						const findCurrentTask = parseNotes.findIndex(task => {
-							const textTask = e.target.parentNode.childNodes[0].textContent;
-							if(task.taskContent === textTask) {
-								return task
-							}
-						});
-						parseNotes[findCurrentTask].isDone = !parseNotes[findCurrentTask].isDone;
-						const setNote= JSON.stringify(parseNotes);
-						localStorage.setItem('toDo' , setNote);
-					
+				if (e.target.className === "done") {
+					e.target.parentNode.classList.add("done__task");
+					e.target.setAttribute("disabled", true);
+					e.target.parentNode.lastChild.setAttribute("disabled", true);
+					const parseNotes = JSON.parse(localStorage.getItem("toDo"));
+					let findTask = toDOList.checkFunction(e, parseNotes);
+					parseNotes[findTask].isDone = !parseNotes[findTask].isDone;
+					const setNote = JSON.stringify(parseNotes);
+					localStorage.setItem("toDo", setNote);
 				}
 			},
 			sortTask(e) {
-				const $sort = document.querySelector('.sort');
-				$sort.addEventListener('click', function(){
-					const $doneTask = document.querySelectorAll('.done__task');
+				const $sort = document.querySelector(".sort");
+				$sort.addEventListener("click", function() {
+					let i = 0;
+					const $doneTask = document.querySelectorAll(".done__task");
 					$doneTask.forEach(element => {
-						element.classList.toggle('hide');
-					})
-				})
-				
+						if (!element.classList.contains("hide")) {
+							i++;
+							element.classList.add("hide");
+						}
+					});
+					if (i === 0) {
+						$doneTask.forEach(element => {
+							element.classList.remove("hide");
+						});
+					}
+				});
 			}
-
-		}
-
-		const $buttonCreateTask = document.querySelector('.add');
-		$buttonCreateTask.addEventListener('click', toDOList.addTask); 
-		const $inputTask = document.querySelector('.in');
-		$inputTask.addEventListener('keydown', e => {
+		};
+		
+		const $buttonCreateTask = document.querySelector(".add");
+		$buttonCreateTask.addEventListener("click", toDOList.addTask);
+		const $inputTask = document.querySelector(".in");
+		$inputTask.addEventListener("keydown", e => {
 			if (e.keyCode === 13) {
 				toDOList.addTask();
 			}
 		});
-		const $button = document.querySelector('#toDoList');
-		$button.addEventListener('click', toDOList.taskStatus); 
-		$button.addEventListener('click', toDOList.removeTask);
-		$button.addEventListener('click', toDOList.updateTask);
-		const $sortTask = document.querySelector('.sort');
-		$sortTask.addEventListener('click', toDOList.sortTask());
-
+		const $button = document.querySelector("#toDoList");
+		$button.addEventListener("click", toDOList.taskStatus);
+		$button.addEventListener("click", toDOList.removeTask);
+		$button.addEventListener("click", toDOList.updateTask);
+		const $sortTask = document.querySelector(".sort");
+		$sortTask.addEventListener("click", toDOList.sortTask());
+		
 		saveList();
-
-	
 	</script>
+	
 </body>
 
 </html>
